@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project: Library</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="index.js" defer></script>
+</head>
+<body>
+    <h1 id="page-title">My Library</h1>
+    <div id="book-card-container">
+        <button class="add-book" id="showDialog">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>
+            <p>New Book</p>
+        </button>
+    </div>
+
+    <dialog id="my-dialog">
+        <form id="my-dialog-form">
+            <p>
+                <label for="title">Title</label>
+                <input type="text" name="title" id="title" required>
+            </p>
+            <p>
+                <label for="author">Author</label>
+                <input type="text" name="author" id="author" required>
+            </p>
+            <p>
+                <label for="pages">N. of pages</label>
+                <input type="number" name="pages" id="pages" required>
+            </p>
+            <p>
+                <label for="read">Read?</label>
+                <input type="checkbox" name="read" id="read">
+            </p>
+            <div id="dialog-buttons">
+                <button id="cancel-btn" value="cancel">Cancel</button>
+                <button value="default" id="confirm-btn">Confirm</button>
+            </div>
+        </form>
+    </dialog>
+    
+
+
+</body>
+</html>
