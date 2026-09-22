@@ -5,22 +5,35 @@ const confirmBtn = myDialog.querySelector('#confirm-btn');
 const dialogForm = document.querySelector("#my-dialog-form");
 const bookCardContainer = document.querySelector('#book-card-container');
 
-
-
-function Book(title, author, pages, read){
-    if (!new.target) {
-        throw Error("You must use the 'new' operator to call the constructor");
+// Refactored plain constructor Book into a class
+class Book {
+    // Constructor method
+    constructor(title, author, pages, read) {
+        // Instance properties refactored into constructor function
+        // of the Book class
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.read = read;
+        this.id = crypto.randomUUID();
     }
-
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.read = read;
-    this.id = crypto.randomUUID();
-    this.info = function () {
+    
+    info(){
         console.log(`${this.title} by ${this.author}, ${pages} pages, ${read ? 'already red' : 'not read yet'}`)
     }
 
+    // Prototype method refactored into an instance method of Book
+    // class
+    toggleRead(id) {
+        myLibrary = myLibrary.map(function(item) {
+            if (item.id === id) {
+                item.read = !item.read;
+            }
+            return item;
+        });
+        bookCardContainer.replaceChildren(showButton);
+        displayBooks(); 
+    }
 }
 
 
@@ -31,17 +44,6 @@ let myLibrary = [
     new Book("Dune", "Frank Herbert", 412, false),
     new Book("The Pragmatic Programmer", "Andrew Hunt & David Thomas", 352, true)
 ];
-
-Book.prototype.toggleRead = function(id) {
-    myLibrary = myLibrary.map(function(item) {
-        if (item.id === id) {
-            item.read = !item.read;
-        }
-        return item;
-    });
-    bookCardContainer.replaceChildren(showButton);
-    displayBooks(); 
-}
 
 
 function addBookToLibrary(title, author, pages, read) {
