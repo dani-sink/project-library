@@ -8,15 +8,20 @@ const bookCardContainer = document.querySelector('#book-card-container');
 
 
 function Book(title, author, pages, read){
+    // Safety guard to prevent constructor function from being
+    // accidentally called like a regular function.
     if (!new.target) {
         throw Error("You must use the 'new' operator to call the constructor");
     }
 
+    // Instance properties
     this.title = title;
     this.author = author;
     this.pages = pages;
     this.read = read;
     this.id = crypto.randomUUID();
+
+    // Instance method
     this.info = function () {
         console.log(`${this.title} by ${this.author}, ${pages} pages, ${read ? 'already red' : 'not read yet'}`)
     }
@@ -32,14 +37,20 @@ let myLibrary = [
     new Book("The Pragmatic Programmer", "Andrew Hunt & David Thomas", 352, true)
 ];
 
+// toggleRead defined explicitly on the Book prototype
 Book.prototype.toggleRead = function(id) {
     myLibrary = myLibrary.map(function(item) {
+        // Match book by id
         if (item.id === id) {
             item.read = !item.read;
         }
         return item;
     });
+
+    // Removes all Book nodes except the 'New Book' button
     bookCardContainer.replaceChildren(showButton);
+    
+    // Re-render the books
     displayBooks(); 
 }
 
@@ -56,25 +67,34 @@ function deleteBookCard(id) {
     displayBooks();
 }
 
+// Tasked with creating the UI for a single Book Card that
+// will be added to the grid container later with the
+// displayBooks function below
 function createBookCard(book) {
-    
+    // Container for the book card
     const bookCard = document.createElement('div');
-    bookCard.classList.add("book-card");
+    bookCard.classList.add("book-card"); // for style purposes
 
+    // Add a data attribute to the book card so we 
+    // can identify it by id.
     bookCard.dataset.id = book.id;
 
+    // Book title text
     const bookTitle = document.createElement('p');
     bookTitle.textContent = book.title;
     bookTitle.classList.add("book-title");
     
+    // Book author text
     const bookAuthor = document.createElement('p');
     bookAuthor.textContent = book.author;
     bookAuthor.classList.add("book-author");
 
+    // Book number of pages text
     const bookPages = document.createElement('p');
     bookPages.textContent = String(book.pages) + " pages";
     bookPages.classList.add("book-pages");
 
+    // Read status badge
     const readStatusBadge = document.createElement('div');
     readStatusBadge.classList.add('read-status-badge');
     if (book.read) {
@@ -90,33 +110,46 @@ function createBookCard(book) {
         `;
     }
 
+    // divider element
     const divider = document.createElement('hr');
     divider.classList.add('divider');
 
+    // Container for the buttons on the bottom of the card
     const buttonsContainer = document.createElement('div');
     buttonsContainer.classList.add('action-buttons-container');
 
+    // Toggle button
     const toggleButton = document.createElement('button');
     toggleButton.classList.add('toggle-button');
     toggleButton.textContent = "Toggle Read";
+
+    // Event listener to detect which book's toggle read
+    // button was clicked
     toggleButton.addEventListener("click", function(e) {
         if (e.target.tagName === "BUTTON") {
+            // Extract the id from the grandparent element, which is
+            // the Book card container which has the data attribute
             book.toggleRead(e.target.parentElement.parentElement.dataset.id);
         }
     })
 
-    
+    // Delete button
     const deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-button');
     deleteButton.innerHTML = `
     <svg class="delete-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" /></svg>
     `
+
+    // Event listener to detect which book to delete
     deleteButton.addEventListener("click", function(e) {
         if (e.target.tagName === "BUTTON"){
+            // Extract the id from the grandparent element, which is
+            // the Book card container which has the data attribute
             deleteBookCard(e.target.parentElement.parentElement.dataset.id);
         }
     })
 
+    // Now that all DOM element are created, attach them to the Book card
     bookCard.appendChild(bookTitle);
     bookCard.appendChild(bookAuthor);
     bookCard.appendChild(bookPages);
@@ -126,9 +159,12 @@ function createBookCard(book) {
     buttonsContainer.appendChild(deleteButton);
     bookCard.appendChild(buttonsContainer);
 
+    // Return the Book card
     return bookCard;
 }
 
+// Create all the books of myLibrary and display
+// them on the body
 function displayBooks() {
     for (const book of myLibrary) {
         const bookCard = createBookCard(book);
@@ -144,7 +180,7 @@ showButton.addEventListener("click", function(){
 });
 
 
-// Prevent the "cancel" button from the default behavior of submitting the form, and close the dialog with `close()` method, which triggers the "close" event.
+// Prevent the "cancel" button from the default behavior of submitting the form, and close the dialog with `close()` method, which triggers the "close" event. Reset the dialog form as well.
 cancelBtn.addEventListener("click", function(event) {
     event.preventDefault();
 
@@ -157,21 +193,30 @@ cancelBtn.addEventListener("click", function(event) {
 confirmBtn.addEventListener("click", function(event) {
     event.preventDefault(); // We don't want to submit this fake form
 
+    // If the dialog form is valid
     if (dialogForm.checkValidity()) {
         const bookTitle = dialogForm.querySelector('#title');
         const bookAuthor = dialogForm.querySelector('#author');
         const numPages = dialogForm.querySelector('#pages');
         const isRead = dialogForm.querySelector('#read');
     
+        // Create new Book instance from user input and add it to
+        // myLibrary
         const newBook = addBookToLibrary(bookTitle.value, bookAuthor.value, numPages.value, isRead.checked);
-         
+        
+        // Create the UI Book Card
         const newBookCard = createBookCard(newBook);
+        // Add it to the grid
         bookCardContainer.appendChild(newBookCard);
+        // Close the modal
         myDialog.close();
+        // Reset the dialog form
         dialogForm.reset();
     } else {
+        // Display default form error message
         dialogForm.reportValidity();
     }    
 });
 
+// Initial render
 displayBooks();
