@@ -1,222 +1,423 @@
 const showButton = document.querySelector("#showDialog");
 const myDialog = document.querySelector("#my-dialog");
-const cancelBtn = myDialog.querySelector('#cancel-btn');
-const confirmBtn = myDialog.querySelector('#confirm-btn');
+const cancelBtn = myDialog.querySelector("#cancel-btn");
+const confirmBtn = myDialog.querySelector("#confirm-btn");
 const dialogForm = document.querySelector("#my-dialog-form");
-const bookCardContainer = document.querySelector('#book-card-container');
+const bookCardContainer = document.querySelector("#book-card-container");
+const titleEle = document.getElementById("title");
+const authorEle = document.getElementById("author");
+const pagesEle = document.getElementById("pages");
+const readEle = document.getElementById("read");
+const titleEleError = document.querySelector("#title + div.error");
+const authorEleError = document.querySelector("#author + div.error");
+const pagesEleError = document.querySelector("#above-btns");
 
+function Book(title, author, pages, read) {
+  // Safety guard to prevent constructor function from being
+  // accidentally called like a regular function.
+  if (!new.target) {
+    throw Error("You must use the 'new' operator to call the constructor");
+  }
 
+  // Instance properties
+  this.title = title;
+  this.author = author;
+  this.pages = pages;
+  this.read = read;
+  this.id = crypto.randomUUID();
 
-function Book(title, author, pages, read){
-    // Safety guard to prevent constructor function from being
-    // accidentally called like a regular function.
-    if (!new.target) {
-        throw Error("You must use the 'new' operator to call the constructor");
-    }
-
-    // Instance properties
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.read = read;
-    this.id = crypto.randomUUID();
-
-    // Instance method
-    this.info = function () {
-        console.log(`${this.title} by ${this.author}, ${pages} pages, ${read ? 'already red' : 'not read yet'}`)
-    }
-
+  // Instance method
+  this.info = function () {
+    console.log(
+      `${this.title} by ${this.author}, ${pages} pages, ${read ? "already red" : "not read yet"}`,
+    );
+  };
 }
 
-
 let myLibrary = [
-    new Book("The Hobbit", "J.R.R. Tolkien", 295, true),
-    new Book("1984", "George Orwell", 328, false),
-    new Book("Clean Code", "Robert C. Martin", 464, true),
-    new Book("Dune", "Frank Herbert", 412, false),
-    new Book("The Pragmatic Programmer", "Andrew Hunt & David Thomas", 352, true)
+  new Book("The Hobbit", "J.R.R. Tolkien", 295, true),
+  new Book("1984", "George Orwell", 328, false),
+  new Book("Clean Code", "Robert C. Martin", 464, true),
+  new Book("Dune", "Frank Herbert", 412, false),
+  new Book("The Pragmatic Programmer", "Andrew Hunt & David Thomas", 352, true),
 ];
 
 // toggleRead defined explicitly on the Book prototype
-Book.prototype.toggleRead = function(id) {
-    myLibrary = myLibrary.map(function(item) {
-        // Match book by id
-        if (item.id === id) {
-            item.read = !item.read;
-        }
-        return item;
-    });
+Book.prototype.toggleRead = function (id) {
+  myLibrary = myLibrary.map(function (item) {
+    // Match book by id
+    if (item.id === id) {
+      item.read = !item.read;
+    }
+    return item;
+  });
 
-    // Removes all Book nodes except the 'New Book' button
-    bookCardContainer.replaceChildren(showButton);
-    
-    // Re-render the books
-    displayBooks(); 
-}
+  // Removes all Book nodes except the 'New Book' button
+  bookCardContainer.replaceChildren(showButton);
 
+  // Re-render the books
+  displayBooks();
+};
 
 function addBookToLibrary(title, author, pages, read) {
-    const newBook = new Book(title, author, pages, read);
-    myLibrary.push(newBook);
-    return newBook;
+  const newBook = new Book(title, author, pages, read);
+  myLibrary.push(newBook);
+  return newBook;
 }
 
 function deleteBookCard(id) {
-    myLibrary = myLibrary.filter(item => item.id !== id);
-    bookCardContainer.replaceChildren(showButton);
-    displayBooks();
+  myLibrary = myLibrary.filter((item) => item.id !== id);
+  bookCardContainer.replaceChildren(showButton);
+  displayBooks();
 }
 
 // Tasked with creating the UI for a single Book Card that
 // will be added to the grid container later with the
 // displayBooks function below
 function createBookCard(book) {
-    // Container for the book card
-    const bookCard = document.createElement('div');
-    bookCard.classList.add("book-card"); // for style purposes
+  // Container for the book card
+  const bookCard = document.createElement("div");
+  bookCard.classList.add("book-card"); // for style purposes
 
-    // Add a data attribute to the book card so we 
-    // can identify it by id.
-    bookCard.dataset.id = book.id;
+  // Add a data attribute to the book card so we
+  // can identify it by id.
+  bookCard.dataset.id = book.id;
 
-    // Book title text
-    const bookTitle = document.createElement('p');
-    bookTitle.textContent = book.title;
-    bookTitle.classList.add("book-title");
-    
-    // Book author text
-    const bookAuthor = document.createElement('p');
-    bookAuthor.textContent = book.author;
-    bookAuthor.classList.add("book-author");
+  // Book title text
+  const bookTitle = document.createElement("p");
+  bookTitle.textContent = book.title;
+  bookTitle.classList.add("book-title");
 
-    // Book number of pages text
-    const bookPages = document.createElement('p');
-    bookPages.textContent = String(book.pages) + " pages";
-    bookPages.classList.add("book-pages");
+  // Book author text
+  const bookAuthor = document.createElement("p");
+  bookAuthor.textContent = book.author;
+  bookAuthor.classList.add("book-author");
 
-    // Read status badge
-    const readStatusBadge = document.createElement('div');
-    readStatusBadge.classList.add('read-status-badge');
-    if (book.read) {
-        readStatusBadge.classList.add('green-bkg');
-        readStatusBadge.innerHTML = `
+  // Book number of pages text
+  const bookPages = document.createElement("p");
+  bookPages.textContent = String(book.pages) + " pages";
+  bookPages.classList.add("book-pages");
+
+  // Read status badge
+  const readStatusBadge = document.createElement("div");
+  readStatusBadge.classList.add("read-status-badge");
+  if (book.read) {
+    readStatusBadge.classList.add("green-bkg");
+    readStatusBadge.innerHTML = `
         <svg class="read" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" /></svg>
         <p class="green-text">Read</p>
         `;
-    } else {
-        readStatusBadge.innerHTML = `
+  } else {
+    readStatusBadge.innerHTML = `
         <svg class="not-read" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21.5C10.65 20.65 8.2 20 6.5 20C4.85 20 3.15 20.3 1.75 21.05C1.65 21.1 1.6 21.1 1.5 21.1C1.25 21.1 1 20.85 1 20.6V6C1.6 5.55 2.25 5.25 3 5C4.11 4.65 5.33 4.5 6.5 4.5C8.45 4.5 10.55 4.9 12 6C13.45 4.9 15.55 4.5 17.5 4.5C18.67 4.5 19.89 4.65 21 5C21.75 5.25 22.4 5.55 23 6V20.6C23 20.85 22.75 21.1 22.5 21.1C22.4 21.1 22.35 21.1 22.25 21.05C20.85 20.3 19.15 20 17.5 20C15.8 20 13.35 20.65 12 21.5M11 7.5C9.64 6.9 7.84 6.5 6.5 6.5C5.3 6.5 4.1 6.65 3 7V18.5C4.1 18.15 5.3 18 6.5 18C7.84 18 9.64 18.4 11 19V7.5M13 19C14.36 18.4 16.16 18 17.5 18C18.7 18 19.9 18.15 21 18.5V7C19.9 6.65 18.7 6.5 17.5 6.5C16.16 6.5 14.36 6.9 13 7.5V19Z" /></svg>
         <p>Not Read</p>
         `;
+  }
+
+  // divider element
+  const divider = document.createElement("hr");
+  divider.classList.add("divider");
+
+  // Container for the buttons on the bottom of the card
+  const buttonsContainer = document.createElement("div");
+  buttonsContainer.classList.add("action-buttons-container");
+
+  // Toggle button
+  const toggleButton = document.createElement("button");
+  toggleButton.classList.add("toggle-button");
+  toggleButton.textContent = "Toggle Read";
+
+  // Event listener to detect which book's toggle read
+  // button was clicked
+  toggleButton.addEventListener("click", function (e) {
+    if (e.target.tagName === "BUTTON") {
+      // Extract the id from the grandparent element, which is
+      // the Book card container which has the data attribute
+      book.toggleRead(e.target.parentElement.parentElement.dataset.id);
     }
+  });
 
-    // divider element
-    const divider = document.createElement('hr');
-    divider.classList.add('divider');
-
-    // Container for the buttons on the bottom of the card
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.classList.add('action-buttons-container');
-
-    // Toggle button
-    const toggleButton = document.createElement('button');
-    toggleButton.classList.add('toggle-button');
-    toggleButton.textContent = "Toggle Read";
-
-    // Event listener to detect which book's toggle read
-    // button was clicked
-    toggleButton.addEventListener("click", function(e) {
-        if (e.target.tagName === "BUTTON") {
-            // Extract the id from the grandparent element, which is
-            // the Book card container which has the data attribute
-            book.toggleRead(e.target.parentElement.parentElement.dataset.id);
-        }
-    })
-
-    // Delete button
-    const deleteButton = document.createElement('button');
-    deleteButton.classList.add('delete-button');
-    deleteButton.innerHTML = `
+  // Delete button
+  const deleteButton = document.createElement("button");
+  deleteButton.classList.add("delete-button");
+  deleteButton.innerHTML = `
     <svg class="delete-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" /></svg>
-    `
+    `;
 
-    // Event listener to detect which book to delete
-    deleteButton.addEventListener("click", function(e) {
-        if (e.target.tagName === "BUTTON"){
-            // Extract the id from the grandparent element, which is
-            // the Book card container which has the data attribute
-            deleteBookCard(e.target.parentElement.parentElement.dataset.id);
-        }
-    })
+  // Event listener to detect which book to delete
+  deleteButton.addEventListener("click", function (e) {
+    if (e.target.tagName === "BUTTON") {
+      // Extract the id from the grandparent element, which is
+      // the Book card container which has the data attribute
+      deleteBookCard(e.target.parentElement.parentElement.dataset.id);
+    }
+  });
 
-    // Now that all DOM element are created, attach them to the Book card
-    bookCard.appendChild(bookTitle);
-    bookCard.appendChild(bookAuthor);
-    bookCard.appendChild(bookPages);
-    bookCard.appendChild(readStatusBadge);
-    bookCard.appendChild(divider);
-    buttonsContainer.appendChild(toggleButton);
-    buttonsContainer.appendChild(deleteButton);
-    bookCard.appendChild(buttonsContainer);
+  // Now that all DOM element are created, attach them to the Book card
+  bookCard.appendChild(bookTitle);
+  bookCard.appendChild(bookAuthor);
+  bookCard.appendChild(bookPages);
+  bookCard.appendChild(readStatusBadge);
+  bookCard.appendChild(divider);
+  buttonsContainer.appendChild(toggleButton);
+  buttonsContainer.appendChild(deleteButton);
+  bookCard.appendChild(buttonsContainer);
 
-    // Return the Book card
-    return bookCard;
+  // Return the Book card
+  return bookCard;
 }
 
 // Create all the books of myLibrary and display
 // them on the body
 function displayBooks() {
-    for (const book of myLibrary) {
-        const bookCard = createBookCard(book);
-        bookCardContainer.appendChild(bookCard);
-    }
+  for (const book of myLibrary) {
+    const bookCard = createBookCard(book);
+    bookCardContainer.appendChild(bookCard);
+  }
 
-    document.body.appendChild(bookCardContainer);
+  document.body.appendChild(bookCardContainer);
 }
 
 // "New book" button opens the <dialog> modally
-showButton.addEventListener("click", function(){
-    myDialog.showModal();
+showButton.addEventListener("click", function () {
+  myDialog.showModal();
 });
-
 
 // Prevent the "cancel" button from the default behavior of submitting the form, and close the dialog with `close()` method, which triggers the "close" event. Reset the dialog form as well.
-cancelBtn.addEventListener("click", function(event) {
-    event.preventDefault();
+cancelBtn.addEventListener("click", function (event) {
+  event.preventDefault();
 
-    myDialog.close();
-    dialogForm.reset();
-})
-
- 
-// Prevent the "confirm" button from the default behavior of submitting the form, and close the dialog with the `close()` method, which triggers the "close" event.
-confirmBtn.addEventListener("click", function(event) {
-    event.preventDefault(); // We don't want to submit this fake form
-
-    // If the dialog form is valid
-    if (dialogForm.checkValidity()) {
-        const bookTitle = dialogForm.querySelector('#title');
-        const bookAuthor = dialogForm.querySelector('#author');
-        const numPages = dialogForm.querySelector('#pages');
-        const isRead = dialogForm.querySelector('#read');
-    
-        // Create new Book instance from user input and add it to
-        // myLibrary
-        const newBook = addBookToLibrary(bookTitle.value, bookAuthor.value, numPages.value, isRead.checked);
-        
-        // Create the UI Book Card
-        const newBookCard = createBookCard(newBook);
-        // Add it to the grid
-        bookCardContainer.appendChild(newBookCard);
-        // Close the modal
-        myDialog.close();
-        // Reset the dialog form
-        dialogForm.reset();
-    } else {
-        // Display default form error message
-        dialogForm.reportValidity();
-    }    
+  myDialog.close();
+  resetDialogFormStyles();
+  dialogForm.reset();
 });
+
+titleEle.addEventListener("input", function () {
+  const result = isValidTitle(titleEle.value);
+  if (!result.isValid) {
+    showInvalidTitleError(result.message);
+    return;
+  }
+  showValidTitleError();
+});
+
+authorEle.addEventListener("input", function () {
+  const result = isValidAuthor(authorEle.value);
+  if (!result.isValid) {
+    showInvalidAuthorError(result.message);
+    return;
+  }
+  showValidAuthorError();
+});
+
+pagesEle.addEventListener("input", function () {
+  const result = isValidPageNumber(pagesEle.value);
+  if (!result.isValid) {
+    showInvalidPageNumber(result.message);
+    return;
+  }
+  showValidPageNumber();
+});
+
+// Prevent the "confirm" button from the default behavior of submitting the form, and close the dialog with the `close()` method, which triggers the "close" event.
+confirmBtn.addEventListener("click", function (event) {
+  event.preventDefault(); // We don't want to submit this fake form
+
+  const title = titleEle.value;
+  const author = authorEle.value;
+  const pages = pagesEle.value;
+  const resultTitle = isValidTitle(title);
+  const resultAuthor = isValidAuthor(author);
+  const resultPages = isValidPageNumber(pages);
+
+  if (!resultTitle.isValid) {
+    showInvalidTitleError(resultTitle.message);
+    return;
+  }
+
+  showValidTitleError();
+  if (!resultAuthor.isValid) {
+    showInvalidAuthorError(resultAuthor.message);
+    return;
+  }
+
+  showValidAuthorError();
+  if (!resultPages.isValid) {
+    showInvalidPageNumber(resultPages.message);
+    return;
+  }
+
+  showValidPageNumber();
+
+  // After that, the dialog form is valid, so we can create the new Book
+  createNewBook(title, author, pages, readEle.checked);
+});
+
+function isValidTitle(title) {
+  if (!title || title.trim() === "") {
+    return {
+      isValid: false,
+      message: " Book title is required.",
+    };
+  }
+  const cleanedTitle = title.trim();
+
+  if (cleanedTitle.length > 100) {
+    return {
+      isValid: false,
+      message: " Title must be 100 characters or less.",
+    };
+  }
+
+  const titleRegex = /^[A-Za-z0-9\s'":!?,.\-–—]{1,100}$/;
+
+  if (!titleRegex.test(cleanedTitle)) {
+    return {
+      isValid: false,
+      message:
+        " Title must be 1-100 characters using only letters, numbers, and standard punctuation.",
+    };
+  } else {
+    return {
+      isValid: true,
+      message: " Title is valid.",
+    };
+  }
+}
+
+function isValidAuthor(authorName) {
+  const cleanedName = authorName.trim();
+
+  if (cleanedName.length === 0) {
+    return {
+      isValid: false,
+      message: " Author name is required.",
+    };
+  }
+
+  if (cleanedName.length < 2) {
+    return {
+      isValid: false,
+      message: " Author name must be at least 2 characters.",
+    };
+  }
+  if (cleanedName.length > 50) {
+    return {
+      isValid: false,
+      message: " Author name must be 50 characters or less.",
+    };
+  }
+
+  const nameRegex = /^[\p{L}\p{M}\s'-]{2,50}$/u;
+
+  if (!nameRegex.test(cleanedName)) {
+    return {
+      isValid: false,
+      message:
+        " Please enter a valid author name. Use letters, spaces, hyphens, or apostrophes only.",
+    };
+  } else {
+    return {
+      isValid: true,
+      message: " Author name is valid.",
+    };
+  }
+}
+
+function isValidPageNumber(pageNum) {
+  const pages = Number(pageNum);
+
+  if (!pages) {
+    return {
+      isValid: false,
+      message: " Number of pages is required.",
+    };
+  }
+
+  if (pages < 1) {
+    return {
+      isValid: false,
+      message: " Minimum number of pages is 1.",
+    };
+  }
+
+  if (pages > 30000) {
+    return {
+      isValid: false,
+      message: " Maximum number of pages is 30,000.",
+    };
+  }
+
+  return {
+    isValid: true,
+    message: " Number is valid",
+  };
+}
+
+function showInvalidTitleError(msg) {
+  titleEle.setCustomValidity(msg);
+  titleEleError.textContent = msg;
+  titleEleError.className = "error active";
+}
+
+function showValidTitleError() {
+  titleEle.setCustomValidity("");
+  titleEleError.textContent = "";
+  titleEleError.className = "error";
+}
+
+function showInvalidAuthorError(msg) {
+  authorEle.setCustomValidity(msg);
+  authorEleError.textContent = msg;
+  authorEleError.className = "error active";
+}
+
+function showValidAuthorError() {
+  authorEle.setCustomValidity("");
+  authorEleError.textContent = "";
+  authorEleError.className = "error";
+}
+
+function showInvalidPageNumber(msg) {
+  pagesEle.setCustomValidity(msg);
+  pagesEleError.textContent = msg;
+  pagesEleError.className = "error active";
+}
+
+function showValidPageNumber() {
+  pagesEle.setCustomValidity("");
+  pagesEleError.textContent = "";
+  pagesEleError.className = "error";
+}
+
+function createNewBook(title, author, pages, isRead) {
+  // Create new Book instance from user input and add it to
+  // myLibrary
+  const newBook = addBookToLibrary(title, author, pages, isRead);
+
+  // Create the UI Book Card
+  const newBookCard = createBookCard(newBook);
+  // Add it to the grid
+  bookCardContainer.appendChild(newBookCard);
+  // Close the modal
+  myDialog.close();
+  // Remove the dialog custom error warnings
+  resetDialogFormStyles();
+  // Reset the dialog form
+  dialogForm.reset();
+}
+
+function resetDialogFormStyles() {
+  titleEle.setCustomValidity("");
+  titleEleError.textContent = "";
+  titleEleError.className = "error";
+  authorEle.setCustomValidity("");
+  authorEleError.textContent = "";
+  authorEleError.className = "error";
+  pagesEle.setCustomValidity("");
+  pagesEleError.textContent = "";
+  pagesEleError.className = "error";
+}
 
 // Initial render
 displayBooks();
